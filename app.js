@@ -23,44 +23,37 @@ const articleSchema = {
 
 const Article = mongoose.model("Article", articleSchema);
 //TODO
-app.get("/articles", function (req, res) {
-    // Use the find method to get all articles
-    Article.find()
-        .exec() // Execute the query
-        .then(foundArticles => {
-            console.log(foundArticles); // Send the found articles as the response
-        })
-        .catch(err => {
-            console.error(err); // Log the error
-            res.status(500).send("Error retrieving articles."); // Handle the error case
-        });
-});
 
-
-app.post("/articles", function (req, res) {
-    const newArticle = new Article({
-        title: req.body.title,
-        content: req.body.content
-    });
-
-    newArticle.save() // Save the new article to the database
-        .then(savedArticle => {
-            res.send("Successfully added a new article");
-        })
-        .catch(err => {
-            res.send(err); // Send the error as the response
-        });
-});
-
-app.delete("/articles", async function (req, res) {
+app.route("/articles").get(async function (req, res) {
     try {
-        await Article.deleteMany(); // No need for a callback anymore
-        res.send("Successfully deleted all articles.");
+        const foundArticles = await Article.find().exec();
+        res.send(foundArticles);
     } catch (err) {
-        res.send(err);
+        res.status(500).send(err);
     }
-});
+})
+    .post(function (req, res) {
+        const newArticle = new Article({
+            title: req.body.title,
+            content: req.body.content
+        });
 
+        newArticle.save() // Save the new article to the database
+            .then(savedArticle => {
+                res.send("Successfully added a new article");
+            })
+            .catch(err => {
+                res.send(err); // Send the error as the response
+            });
+    })
+    .delete(async function (req, res) {
+        try {
+            await Article.deleteMany(); // No need for a callback anymore
+            res.send("Successfully deleted all articles.");
+        } catch (err) {
+            res.send(err);
+        }
+    });
 
 app.listen(3000, function () {
     console.log("Server started on port 3000");
